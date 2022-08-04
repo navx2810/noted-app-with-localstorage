@@ -1,4 +1,4 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useCallback, useEffect, useState } from "react";
 import Header from "./Header";
 import Footer from "./Footer";
 import Note from "./Note";
@@ -6,21 +6,28 @@ import CreateArea from "./CreateArea";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import { Button } from "@mui/material";
+import useStateWithStorage from "../utils/useStateWithStorage";
 export const ThemeContext = createContext("null");
 
 function App() {
-  const [theme, setTheme] = useState("light");
-  const [isActive, setIsActive] = useState(false);
+  const [theme, setTheme] = useStateWithStorage("theme", "light");
 
-  const toggleTheme = () => {
-    setTheme((curr) => (curr === "light" ? "dark" : "light"));
+  const toggleTheme = useCallback(() => {
+    setTheme(theme === "light" ? "dark" : "light")
+  }, [theme, setTheme])
+
+  useEffect(() => {
     const theBody = document.getElementById("the-body")
-    theBody.classList.toggle("theBody")
-  };
+    if (theme === "light") {
+      theBody.classList.remove("theBody")
+    } else {
+      theBody.classList.add("theBody")
+    }
+  }, [theme])
 
 
 
-  const [notes, setNotes] = useState([]);
+  const [notes, setNotes] = useStateWithStorage('notes', []);
 
   function addNote(newNote) {
     setNotes((prevNotes) => {
@@ -47,17 +54,13 @@ function App() {
           sx={{ color: "white" }}
           variant="text"
         >
-          {isActive ? (
+          {theme === "dark" ? (
             <LightModeIcon
-              onClick={() => {
-                setIsActive(!isActive);
-              }}
+              onClick={toggleTheme}
             />
           ) : (
             <DarkModeIcon
-              onClick={() => {
-                setIsActive(!isActive);
-              }}
+              onClick={toggleTheme}
             />
           )}
         </Button>
